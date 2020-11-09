@@ -1,0 +1,40 @@
+.circle {
+	display: inline-block;
+	cursor: pointer;
+	border-radius: 50%;
+	width: 24px;
+	height: 24px;
+	margin: 8px;
+	text-indent: -999999px;
+}
+
+.circle.small { width: 16px; height: 16px; }
+.circle.large { width: 32px; height: 32px; }
+
+.circle.black { background-color: black; }
+.circle.red   { background-color: red;   }
+.circle.green { background-color: green; }
+.circle.blue  { background-color: blue;  }
+.circle.cyan  { background-color: cyan;  }
+.circle.magenta { background-color: magenta; }
+.circle.yellow { background-color: yellow; }
+
+.square {
+	display: inline-block;
+	cursor: pointer;
+	width: 32px;
+	height: 32px;
+	margin: 8px;
+	text-indent: -999999px;
+	border: 2px solid;
+	background-position: center;
+	background-repeat: repeat;
+	background-size: cover;
+}
+
+.square.trans { background-image: url('../assets/background.png'); }
+
+.square.white   { background-color: white;   }
+.square.cyan    { background-color: cyan;    }
+.square.magenta { background-color: magenta; }
+.square.yellow  { background-color: yellow;  }
