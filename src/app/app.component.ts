@@ -19,9 +19,8 @@ export class AppComponent {
 	canUndo: boolean;
 	canRedo: boolean;
 
-	// backgroundColor: string;
-	// backgroundImage: string;
-	// backgroundStyle: string = 'auto';
+	backgroundColor: string;
+	backgroundImage: string;
 
 	colors = ['black', 'red', 'green', 'blue'];
 	sizes = { large: 32, medium: 24, small: 16 };
@@ -40,14 +39,15 @@ export class AppComponent {
 		this.size = size;
 	}
 
-	// onFileChange(e) {
-	// 	let reader = new FileReader();
-	// 	reader.onload = () => {
-	// 		this.backgroundImage = reader.result as string;
-	// 	};
-	//
-	// 	reader.readAsDataURL(e.target.files[0]);
-	// }
+	onFileChange(e) {
+		if (e.target.files[0]) {
+			let reader = new FileReader();
+			reader.onload = () => {
+				this.backgroundImage = reader.result as string;
+			};
+			reader.readAsDataURL(e.target.files[0]);
+		}
+	}
 
 	reset() {
 		if (confirm('Are you sure you want to reset?')) {

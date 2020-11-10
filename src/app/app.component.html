@@ -4,19 +4,24 @@
 		height="{{ height }}"
 		color="{{ color }}"
 		size="{{ size }}"
+		[backgroundColor]="backgroundColor"
+		[backgroundImage]="backgroundImage"
 		(canUndo)="canUndo = $event"
 		(canRedo)="canRedo = $event"></app-canvas>
 </div>
-<!-- <div>
+<!-- <a href="{{ canvas.downloadUri }}" [download]="'image.png'">Download</a> -->
+<div>
 	<div class="square trans" (click)="backgroundColor = null"></div>
 	<div class="square white" (click)="backgroundColor = 'white'"></div>
 	<div class="square cyan" (click)="backgroundColor = 'cyan'"></div>
 	<div class="square magenta" (click)="backgroundColor = 'magenta'"></div>
 	<div class="square yellow" (click)="backgroundColor = 'yellow'"></div>
 </div>
-<input type="file" (change)="onFileChange($event)">
-<button type="button" (click)="backgroundImage = null">Clear</button>
-<div *ngIf="backgroundImage != null">
+<div>
+	<input type="file" (change)="onFileChange($event)">
+	<button type="button" (click)="backgroundImage = null">Clear</button>
+</div>
+<!-- <div *ngIf="backgroundImage != null">
 	<a (click)="backgroundStyle = 'auto'">Auto</a>
 	<a (click)="backgroundStyle = 'contain'">Fit</a>
 	<a (click)="backgroundStyle = 'cover'">Fill</a>

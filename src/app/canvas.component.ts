@@ -18,20 +18,22 @@ export interface DrawEvent {
 	time?: number;
 }
 
+// export enum BackgroundMode { FIT, FILL }
+
 @Component({
 	selector: 'app-canvas',
 	templateUrl: './canvas.component.html',
 	styleUrls: ['./canvas.component.css']
 })
 export class CanvasComponent implements AfterViewInit {
-	// private _bgColor: string;
-	// private _bgImage: string;
-	// private _bgStyle: string;
-
-	private _color: string = '#000';
-	private _size: number = 16;
 	private _width: number = 640;
 	private _height: number = 480;
+
+	private _bgColor: string;
+	private _bgImage: string;
+
+	private _color: string = 'black';
+	private _size: number = 16;
 
 	private context: CanvasRenderingContext2D;
 
@@ -42,21 +44,23 @@ export class CanvasComponent implements AfterViewInit {
 
 	@ViewChild('canvas') canvas: ElementRef;
 
-	// get backgroundColor(): string {
-	// 	return this._bgColor || 'transparent';
-	// }
-	//
-	// get backgroundImage(): string {
-	// 	return this._bgImage ? 'url(\'' + this._bgImage + '\')' : 'none';
-	// }
-	//
-	// get backgroundStyle(): string {
-	// 	return this._bgStyle || 'auto';
-	// }
+	get backgroundColor(): string { return this._bgColor; }
+	get backgroundImage(): string { return this._bgImage; }
 
-	// @Input() set backgroundColor(color: string) { this._bgColor = color; }
-	// @Input() set backgroundImage(image: string) { this._bgImage = image; }
-	// @Input() set backgroundStyle(style: string) { this._bgStyle = style; }
+	@Input() set backgroundColor(color: string) {
+		this._bgColor = color;
+		this.backgroundColorChange.emit(this.backgroundColor);
+		this.replay();
+	}
+
+	@Input() set backgroundImage(image: string) {
+		this._bgImage = image;
+		this.backgroundImageChange.emit(this.backgroundImage);
+		this.replay();
+	}
+
+	@Output() backgroundColorChange = new EventEmitter<string>();
+	@Output() backgroundImageChange = new EventEmitter<string>();
 
 	get color(): string { return this._color; }
 	get size(): number { return this._size; }
@@ -65,19 +69,11 @@ export class CanvasComponent implements AfterViewInit {
 
 	@Input() set color(color: string) {
 		this._color = color;
-
-		if (this.context)
-			this.context.strokeStyle = color;
-
 		this.colorChange.emit(color);
 	}
 
 	@Input() set size(size: number) {
 		this._size = size;
-
-		if (this.context)
-			this.context.lineWidth = size;
-
 		this.sizeChange.emit(size);
 	}
 
@@ -109,6 +105,10 @@ export class CanvasComponent implements AfterViewInit {
 	@Output() canUndo = new EventEmitter<boolean>();
 	@Output() canRedo = new EventEmitter<boolean>();
 
+	get downloadUri(): string {
+		return this.canvas.nativeElement.toDataURL('image/png');
+	}
+
 	public ngAfterViewInit() {
 		this.initContext(this.canvas.nativeElement);
 		this.initObserver(this.canvas.nativeElement);
@@ -119,8 +119,6 @@ export class CanvasComponent implements AfterViewInit {
 		canvas.height = this.height;
 
 		this.context = canvas.getContext('2d');
-		this.context.strokeStyle = this.color;
-		this.context.lineWidth = this.size;
 		this.context.lineCap = 'round';
 	}
 
@@ -159,13 +157,59 @@ export class CanvasComponent implements AfterViewInit {
 		.subscribe((event: MouseEvent) => this.onEndDraw());
 	}
 
-	private drawLine(line: Line2D) {
+	private drawBackgroundColor() {
+		if (this.context) {
+			this.context.fillStyle = this.backgroundColor;
+			this.context.fillRect(0, 0, this.width, this.height);
+		}
+	}
+
+	private async drawBackgroundImage(mode = 'fit'): Promise<void> {
 		if (!this.context) return;
 
-		this.context.beginPath();
-		this.context.moveTo(line.start.x, line.start.y);
-		this.context.lineTo(line.end.x, line.end.y);
-		this.context.stroke();
+		return new Promise<void>((resolve) => {
+			let backdrop = new Image();
+			backdrop.onload = () => {
+				let canvas = this.canvas.nativeElement;
+				let xScale = canvas.width / backdrop.width;
+				let yScale = canvas.height / backdrop.height;
+
+				let scale: number;
+
+				switch (mode) {
+					case 'fit':
+						scale = Math.min(xScale, yScale);
+						break;
+					case 'fill':
+						scale = Math.max(xScale, yScale);
+						break;
+				}
+
+				let dWidth = backdrop.width * scale;
+				let dHeight = backdrop.height * scale;
+
+				let dx = (canvas.width - dWidth) / 2;
+				let dy = (canvas.height - dHeight) / 2;
+
+				this.context.drawImage(backdrop, 0, 0,
+					backdrop.width, backdrop.height,
+					dx, dy, dWidth, dHeight);
+
+				resolve();
+			}
+			backdrop.src = this.backgroundImage;
+		});
+	}
+
+	private drawLine(line: Line2D) {
+		if (this.context) {
+			this.context.strokeStyle = this.color;
+			this.context.lineWidth = this.size;
+			this.context.beginPath();
+			this.context.moveTo(line.start.x, line.start.y);
+			this.context.lineTo(line.end.x, line.end.y);
+			this.context.stroke();
+		}
 	}
 
 	private onStartDraw() {
@@ -193,11 +237,12 @@ export class CanvasComponent implements AfterViewInit {
 	}
 
 	private clear() {
-		if (this.context)
+		if (this.context) {
 			this.context.clearRect(0, 0, this.width, this.height);
+		}
 	}
 
-	public undo()  {
+	public undo() {
 		if (this.undoStack.length) {
 			this.redoStack.push(this.undoStack.pop());
 
@@ -220,6 +265,9 @@ export class CanvasComponent implements AfterViewInit {
 	}
 
 	public reset() {
+		this._bgColor = null;
+		this._bgImage = null;
+
 		this.undoStack = [];
 		this.redoStack = [];
 
@@ -229,57 +277,57 @@ export class CanvasComponent implements AfterViewInit {
 		this.canRedo.emit(false);
 	}
 
-	public replay(fps?: number, index?: number): Promise<any> {
-		const self = this;
-		const delay = fps == undefined || fps <= 0 ? 0 : 1000 / fps;
+	public async replay(fps?: number, index?: number): Promise<void> {
+		if (!this.context) return;
 
 		index = index == undefined ? 0 : index;
 
-		return new Promise<any>((resolve, reject) => {
-			if (!self.context)
-				reject('Drawing context has not been initialized.');
+		if (index == 0) {
+			this.clear();
 
-			if (index == 0) self.clear();
-			if (index < this.undoStack.length) {
-				let event = this.undoStack[index];
+			if (this.backgroundColor)
+				this.drawBackgroundColor();
 
-				self.replayEvent(event, delay).then(() => {
-					return self.replay(fps, index + 1);
-				}).then(resolve);
-			} else {
-				resolve();
-			}
-		});
+			if (this.backgroundImage)
+				await this.drawBackgroundImage();
+		}
+
+		if (this.undoStack.length == 0) return;
+
+		if (index < this.undoStack.length) {
+			const delay = fps == undefined || fps <= 0 ? 0 : 1000 / fps;
+
+			let event = this.undoStack[index];
+
+			this.replayEvent(event, delay).then(() => {
+				return this.replay(fps, index + 1);
+			});
+		}
 	}
 
-	private replayEvent(event: DrawEvent, delay: number): Promise<any> {
-		const self = this;
+	private async replayEvent(event: DrawEvent, delay: number): Promise<void> {
+		if (!this.context) return;
 
-		return new Promise((resolve, reject) => {
-			if (!self.context)
-				reject('Drawing context has not been initialized.');
+		this.color = event.color;
+		this.size = event.size;
 
-			self.color = event.color;
-			self.size = event.size;
-
-			if (delay > 0) {
+		if (delay > 0) {
+			return new Promise<void>((resolve) => {
 				let index = 0;
 				let interval = setInterval(() => {
 					if (index < event.path.length) {
 						let line = event.path[index++];
-						self.drawLine(line);
+						this.drawLine(line);
 					} else {
 						clearInterval(interval);
 						resolve();
 					}
 				}, delay);
-			} else {
-				for (let line of event.path) {
-					self.drawLine(line);
-				}
-
-				resolve();
+			});
+		} else {
+			for (let line of event.path) {
+				this.drawLine(line);
 			}
-		});
+		}
 	}
 }
