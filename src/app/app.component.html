@@ -1,13 +1,13 @@
-<div class="background">
+<div class="frame">
 	<app-canvas #mycanvas
-		backgroundColor="{{ backgroundColor }}"
-		backgroundImage="{{ backgroundImage }}"
-		backgroundStyle="{{ backgroundStyle }}"
+		width="{{ width }}"
+		height="{{ height }}"
 		color="{{ color }}"
 		size="{{ size }}"
-		(draw)="onDraw($event)"></app-canvas>
+		(canUndo)="canUndo = $event"
+		(canRedo)="canRedo = $event"></app-canvas>
 </div>
-<div>
+<!-- <div>
 	<div class="square trans" (click)="backgroundColor = null"></div>
 	<div class="square white" (click)="backgroundColor = 'white'"></div>
 	<div class="square cyan" (click)="backgroundColor = 'cyan'"></div>
@@ -20,11 +20,14 @@
 	<a (click)="backgroundStyle = 'auto'">Auto</a>
 	<a (click)="backgroundStyle = 'contain'">Fit</a>
 	<a (click)="backgroundStyle = 'cover'">Fill</a>
-</div>
+</div> -->
 <div *ngFor="let color of colors">
 	<div *ngFor="let size of ['large', 'medium', 'small']"
 		class="circle {{ size }} {{ color }}"
 		(click)="setColor(color, sizes[size])">{{ color }}</div>
 </div>
-<button (click)="replay()">Replay</button>
-<button (click)="reset()">Reset</button>
+
+<button [disabled]="!canUndo" (click)="replay()">Replay</button>
+<button [disabled]="!canUndo && !canRedo" (click)="reset()">Reset</button>
+<button [disabled]="!canUndo" (click)="canvas.undo()">Undo</button>
+<button [disabled]="!canRedo" (click)="canvas.redo()">Redo</button>
