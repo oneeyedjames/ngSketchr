@@ -18,7 +18,7 @@ export interface DrawEvent {
 	time?: number;
 }
 
-// export enum BackgroundMode { FIT, FILL }
+export type BackgroundMode = 'fit' | 'fill';
 
 @Component({
 	selector: 'app-canvas',
@@ -31,6 +31,7 @@ export class CanvasComponent implements AfterViewInit {
 
 	private _bgColor: string;
 	private _bgImage: string;
+	private _bgMode: BackgroundMode;
 
 	private _color: string = 'black';
 	private _size: number = 16;
@@ -46,21 +47,29 @@ export class CanvasComponent implements AfterViewInit {
 
 	get backgroundColor(): string { return this._bgColor; }
 	get backgroundImage(): string { return this._bgImage; }
+	get backgroundMode(): BackgroundMode { return this._bgMode; }
 
 	@Input() set backgroundColor(color: string) {
 		this._bgColor = color;
-		this.backgroundColorChange.emit(this.backgroundColor);
+		this.backgroundColorChange.emit(color);
 		this.replay();
 	}
 
 	@Input() set backgroundImage(image: string) {
 		this._bgImage = image;
-		this.backgroundImageChange.emit(this.backgroundImage);
+		this.backgroundImageChange.emit(image);
+		this.replay();
+	}
+
+	@Input() set backgroundMode(mode: BackgroundMode) {
+		this._bgMode = mode;
+		this.backgroundModeChange.emit(mode);
 		this.replay();
 	}
 
 	@Output() backgroundColorChange = new EventEmitter<string>();
 	@Output() backgroundImageChange = new EventEmitter<string>();
+	@Output() backgroundModeChange = new EventEmitter<BackgroundMode>();
 
 	get color(): string { return this._color; }
 	get size(): number { return this._size; }
@@ -164,19 +173,19 @@ export class CanvasComponent implements AfterViewInit {
 		}
 	}
 
-	private async drawBackgroundImage(mode = 'fit'): Promise<void> {
+	private async drawBackgroundImage(): Promise<void> {
 		if (!this.context) return;
 
-		return new Promise<void>((resolve) => {
-			let backdrop = new Image();
-			backdrop.onload = () => {
+		return new Promise<void>((resolve, reject) => {
+			let image = new Image();
+			image.onload = () => {
 				let canvas = this.canvas.nativeElement;
-				let xScale = canvas.width / backdrop.width;
-				let yScale = canvas.height / backdrop.height;
+				let xScale = canvas.width / image.width;
+				let yScale = canvas.height / image.height;
 
 				let scale: number;
-
-				switch (mode) {
+				console.log(this.backgroundMode);
+				switch (this.backgroundMode) {
 					case 'fit':
 						scale = Math.min(xScale, yScale);
 						break;
@@ -185,19 +194,20 @@ export class CanvasComponent implements AfterViewInit {
 						break;
 				}
 
-				let dWidth = backdrop.width * scale;
-				let dHeight = backdrop.height * scale;
+				let dWidth = image.width * scale;
+				let dHeight = image.height * scale;
 
 				let dx = (canvas.width - dWidth) / 2;
 				let dy = (canvas.height - dHeight) / 2;
 
-				this.context.drawImage(backdrop, 0, 0,
-					backdrop.width, backdrop.height,
+				this.context.drawImage(image, 0, 0,
+					image.width, image.height,
 					dx, dy, dWidth, dHeight);
 
 				resolve();
 			}
-			backdrop.src = this.backgroundImage;
+			image.onerror = reject;
+			image.src = this.backgroundImage;
 		});
 	}
 

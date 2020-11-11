@@ -6,10 +6,14 @@
 		size="{{ size }}"
 		[backgroundColor]="backgroundColor"
 		[backgroundImage]="backgroundImage"
+		[backgroundMode]="backgroundMode"
 		(canUndo)="canUndo = $event"
 		(canRedo)="canRedo = $event"></app-canvas>
 </div>
-<!-- <a href="{{ canvas.downloadUri }}" [download]="'image.png'">Download</a> -->
+<div>
+	<a href="{{ canUndo ? canvas.downloadUri : '' }}"
+		[download]="'image.png'">Download</a>
+</div>
 <div>
 	<div class="square trans" (click)="backgroundColor = null"></div>
 	<div class="square white" (click)="backgroundColor = 'white'"></div>
@@ -20,18 +24,16 @@
 <div>
 	<input type="file" (change)="onFileChange($event)">
 	<button type="button" (click)="backgroundImage = null">Clear</button>
+	<select [(ngModel)]="backgroundMode">
+		<option value="fit">Fit</option>
+		<option value="fill">Fill</option>
+	</select>
 </div>
-<!-- <div *ngIf="backgroundImage != null">
-	<a (click)="backgroundStyle = 'auto'">Auto</a>
-	<a (click)="backgroundStyle = 'contain'">Fit</a>
-	<a (click)="backgroundStyle = 'cover'">Fill</a>
-</div> -->
 <div *ngFor="let color of colors">
 	<div *ngFor="let size of ['large', 'medium', 'small']"
 		class="circle {{ size }} {{ color }}"
 		(click)="setColor(color, sizes[size])">{{ color }}</div>
 </div>
-
 <button [disabled]="!canUndo" (click)="replay()">Replay</button>
 <button [disabled]="!canUndo && !canRedo" (click)="reset()">Reset</button>
 <button [disabled]="!canUndo" (click)="canvas.undo()">Undo</button>

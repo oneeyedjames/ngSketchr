@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import 'rxjs/add/observable/fromEvent';
 
-import { CanvasComponent } from './canvas.component';
+import { CanvasComponent, BackgroundMode } from '../lib/canvas.module';
 
 @Component({
 	selector: 'app-root',
@@ -21,6 +21,7 @@ export class AppComponent {
 
 	backgroundColor: string;
 	backgroundImage: string;
+	backgroundMode: BackgroundMode = 'fit';
 
 	colors = ['black', 'red', 'green', 'blue'];
 	sizes = { large: 32, medium: 24, small: 16 };
