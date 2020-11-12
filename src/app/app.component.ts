@@ -1,43 +1,44 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, HostListener } from '@angular/core';
+import { MatToolbar, MatDrawer } from '@angular/material';
 import 'rxjs/add/observable/fromEvent';
 
-import { CanvasComponent, BackgroundMode } from '../lib/canvas.module';
+import { CanvasComponent } from '../lib/canvas.module';
 
 @Component({
 	selector: 'app-root',
 	templateUrl: './app.component.html',
 	styleUrls: ['./app.component.css']
 })
-export class AppComponent {
-	title = 'app';
-	color = 'black';
-	size = 16;
-
+export class AppComponent implements AfterViewInit {
 	width = 640;
 	height = 480;
 
 	canUndo: boolean;
 	canRedo: boolean;
 
-	backgroundColor: string;
 	backgroundImage: string;
-	backgroundMode: BackgroundMode = 'fit';
 
-	colors = ['black', 'red', 'green', 'blue'];
-	sizes = { large: 32, medium: 24, small: 16 };
+	@ViewChild('maintoolbar')
+	toolbar: MatToolbar;
+
+	@ViewChild('mainsidebar')
+	sidebar: MatDrawer;
 
 	@ViewChild('mycanvas')
 	canvas: CanvasComponent;
 
-	setColor(color: string, size?: number) {
-		this.color = color;
+	ngAfterViewInit() { this.resizeCanvas(); }
 
-		if (size != undefined)
-			this.size = size;
-	}
+	@HostListener('window:resize', ['$event'])
+	onResize(e) { this.resizeCanvas(); }
 
-	setSize(size: number) {
-		this.size = size;
+	private resizeCanvas() {
+		let mainHeight = this.toolbar._elementRef.nativeElement.offsetHeight;
+
+		this.width = window.innerWidth - this.sidebar._width;
+		this.height = window.innerHeight - mainHeight;
+
+		this.canvas.replay();
 	}
 
 	onFileChange(e) {

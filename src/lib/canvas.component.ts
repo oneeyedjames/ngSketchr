@@ -88,8 +88,10 @@ export class CanvasComponent implements AfterViewInit {
 	@Input() set width(width: number) {
 		this._width = width;
 
-		if (this.context)
+		if (this.context) {
 			this.canvas.nativeElement.width = width;
+			this.initContext(this.canvas.nativeElement);
+		}
 
 		this.widthChange.emit(width);
 	}
@@ -97,8 +99,10 @@ export class CanvasComponent implements AfterViewInit {
 	@Input() set height(height: number) {
 		this._height = height;
 
-		if (this.context)
+		if (this.context) {
 			this.canvas.nativeElement.height = height;
+			this.initContext(this.canvas.nativeElement);
+		}
 
 		this.heightChange.emit(height);
 	}

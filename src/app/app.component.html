@@ -1,68 +1,115 @@
-<mat-toolbar color="primary">ngSketchr</mat-toolbar>
+<mat-toolbar #maintoolbar color="primary">
+	<span>Sketchr</span>
+	<span class="space"></span>
+	<button mat-button [disabled]="!canUndo" (click)="canvas.undo()">
+		<mat-icon matTooltip="Undo">undo</mat-icon> Undo
+	</button>
+	<button mat-button [disabled]="!canRedo" (click)="canvas.redo()">
+		<mat-icon matTooltip="Redo">redo</mat-icon> Redo
+	</button>
+	<button mat-button [disabled]="!canUndo" (click)="replay()">
+		<mat-icon matTooltip="Replay">replay</mat-icon> Replay
+	</button>
+	<button mat-button color="warn" [disabled]="!canUndo && !canRedo" (click)="reset()">
+		<mat-icon matTooltip="Reset">delete</mat-icon> Trash
+	</button>
+</mat-toolbar>
 <mat-drawer-container class="example-container">
-	<mat-drawer mode="side" opened="true">
-		<div>
+	<mat-drawer #mainsidebar mode="side" opened="true">
+		<div class="panel">
 			<h2>Background Color</h2>
-			<div class="square trans" (click)="backgroundColor = null"></div>
-			<div class="square white" (click)="backgroundColor = 'white'"></div>
-			<div class="square cyan" (click)="backgroundColor = 'cyan'"></div>
-			<div class="square magenta" (click)="backgroundColor = 'magenta'"></div>
-			<div class="square yellow" (click)="backgroundColor = 'yellow'"></div>
+			<mat-button-toggle-group #bgColor="matButtonToggleGroup" value="transparent">
+				<mat-button-toggle value="transparent">
+					<div class="square trans"></div>
+				</mat-button-toggle>
+				<mat-button-toggle value="white">
+					<div class="square white"></div>
+				</mat-button-toggle>
+				<mat-button-toggle value="cyan">
+					<div class="square cyan"></div>
+				</mat-button-toggle>
+				<mat-button-toggle value="magenta">
+					<div class="square magenta"></div>
+				</mat-button-toggle>
+				<mat-button-toggle value="yellow">
+					<div class="square yellow"></div>
+				</mat-button-toggle>
+			</mat-button-toggle-group>
 		</div>
-		<div>
+		<div class="panel">
 			<h2>Background Image</h2>
 			<input type="file" (change)="onFileChange($event)">
-			<button type="button" (click)="backgroundImage = null">Clear</button>
-			<h3>Background Image Zoom</h3>
-			<select [(ngModel)]="backgroundMode">
-				<option value="fit">Fit</option>
-				<option value="fill">Fill</option>
-			</select>
+			<input type="button" value="Clear"
+				[disabled]="backgroundImage == null"
+				(click)="backgroundImage = null">
 		</div>
-
-		<h2>Pen Color</h2>
-		<div *ngFor="let color of colors"
-			class="circle {{ color }} large"
-			(click)="setColor(color, sizes[size])">{{ color }}</div>
-
-		<h2>Pen Size</h2>
-		<div *ngFor="let size of ['large', 'medium', 'small']"
-			class="circle black {{ size }}"
-			(click)="setSize(sizes[size])">{{ size }}</div>
+		<div class="panel">
+			<h2>Background Image Mode</h2>
+			<mat-button-toggle-group #bgMode="matButtonToggleGroup" value="fill">
+				<mat-button-toggle value="fill">
+					<mat-icon>fullscreen</mat-icon>
+					Fill
+				</mat-button-toggle>
+				<mat-button-toggle value="fit">
+					<mat-icon>fullscreen_exit</mat-icon>
+					Fit
+				</mat-button-toggle>
+			</mat-button-toggle-group>
+		</div>
+		<div class="panel">
+			<h2>Pen Color</h2>
+			<mat-button-toggle-group #penColor="matButtonToggleGroup" value="black">
+				<mat-button-toggle value="black">
+					<div class="circle black medium"></div>
+				</mat-button-toggle>
+				<mat-button-toggle value="red">
+					<div class="circle red medium"></div>
+				</mat-button-toggle>
+				<mat-button-toggle value="green">
+					<div class="circle green medium"></div>
+				</mat-button-toggle>
+				<mat-button-toggle value="blue">
+					<div class="circle blue medium"></div>
+				</mat-button-toggle>
+			</mat-button-toggle-group>
+		</div>
+		<div class="panel">
+			<h2>Pen Size</h2>
+			<mat-button-toggle-group #penSize="matButtonToggleGroup" value="16">
+				<mat-button-toggle value="16">
+					<div class="circle black small"></div>
+				</mat-button-toggle>
+				<mat-button-toggle value="24">
+					<div class="circle black medium"></div>
+				</mat-button-toggle>
+				<mat-button-toggle value="32">
+					<div class="circle black large"></div>
+				</mat-button-toggle>
+			</mat-button-toggle-group>
+		</div>
+		<div class="panel">
+			<h2>Canvas Size</h2>
+			<div>{{ width }}x{{ height }}</div>
+			<a mat-raised-button color="primary"
+				href="{{ canUndo ? canvas.downloadUri : '' }}"
+				[download]="'image.png'" [disabled]="!canUndo">
+				<mat-icon>download</mat-icon>
+				Download Image
+			</a>
+		</div>
 	</mat-drawer>
-	<mat-drawer-content>
+	<mat-drawer-content style="font-size: 0; line-size: 0">
 		<div class="frame">
 			<app-canvas #mycanvas
-				width="{{ width }}"
-				height="{{ height }}"
-				color="{{ color }}"
-				size="{{ size }}"
-				[backgroundColor]="backgroundColor"
+				[width]="width"
+				[height]="height"
+				[color]="penColor.value"
+				[size]="penSize.value"
+				[backgroundColor]="bgColor.value"
 				[backgroundImage]="backgroundImage"
-				[backgroundMode]="backgroundMode"
+				[backgroundMode]="bgMode.value"
 				(canUndo)="canUndo = $event"
 				(canRedo)="canRedo = $event"></app-canvas>
 		</div>
-		<mat-toolbar>
-			<a mat-icon-button color="primary"
-				href="{{ canUndo ? canvas.downloadUri : '' }}"
-				[download]="'image.png'" [disabled]="!canUndo">
-				<mat-icon matTooltip="Download">download</mat-icon>
-			</a>
-			<span class="mat-caption">|</span>
-			<button mat-icon-button [disabled]="!canUndo" (click)="replay()">
-				<mat-icon matTooltip="Replay">replay</mat-icon>
-			</button>
-			<button mat-icon-button color="warn" [disabled]="!canUndo && !canRedo" (click)="reset()">
-				<mat-icon matTooltip="Reset">delete</mat-icon>
-			</button>
-			<span class="mat-caption">|</span>
-			<button mat-icon-button [disabled]="!canUndo" (click)="canvas.undo()">
-				<mat-icon matTooltip="Undo">undo</mat-icon>
-			</button>
-			<button mat-icon-button [disabled]="!canRedo" (click)="canvas.redo()">
-				<mat-icon matTooltip="Redo">redo</mat-icon>
-			</button>
-		</mat-toolbar>
 	</mat-drawer-content>
 </mat-drawer-container>
