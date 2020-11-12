@@ -1,8 +1,9 @@
 import { Component, ViewChild, AfterViewInit, HostListener } from '@angular/core';
-import { MatToolbar, MatDrawer } from '@angular/material';
+import { MatToolbar, MatDrawer, MatDialog, MatDialogConfig } from '@angular/material';
 import 'rxjs/add/observable/fromEvent';
 
 import { CanvasComponent } from '../lib/canvas.module';
+import { DialogComponent } from './dialog.component';
 
 @Component({
 	selector: 'app-root',
@@ -26,6 +27,8 @@ export class AppComponent implements AfterViewInit {
 
 	@ViewChild('mycanvas')
 	canvas: CanvasComponent;
+
+	constructor(private dialog: MatDialog) {}
 
 	ngAfterViewInit() { this.resizeCanvas(); }
 
@@ -52,12 +55,26 @@ export class AppComponent implements AfterViewInit {
 	}
 
 	reset() {
-		if (confirm('Are you sure you want to reset?')) {
-			this.canvas.reset();
-		}
+		this.openDialog({
+			data: {
+				title: 'Confirm',
+				message: 'Are you sure you wish to procede?',
+				warn: true
+			},
+			disableClose: true
+		}).then((confirmed) => {
+			if (confirmed) this.canvas.reset();
+		})
 	}
 
 	replay() {
 		this.canvas.replay(50);
+	}
+
+	openDialog(config: MatDialogConfig): Promise<boolean> {
+		return new Promise<boolean>((resolve) => {
+			this.dialog.open(DialogComponent, config)
+			.afterClosed().subscribe(resolve);
+		});
 	}
 }
