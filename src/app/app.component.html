@@ -2,7 +2,7 @@
 <mat-drawer-container class="example-container">
 	<mat-drawer mode="side" opened="true">
 		<div>
-			<h3>Background Color</h3>
+			<h2>Background Color</h2>
 			<div class="square trans" (click)="backgroundColor = null"></div>
 			<div class="square white" (click)="backgroundColor = 'white'"></div>
 			<div class="square cyan" (click)="backgroundColor = 'cyan'"></div>
@@ -10,22 +10,25 @@
 			<div class="square yellow" (click)="backgroundColor = 'yellow'"></div>
 		</div>
 		<div>
+			<h2>Background Image</h2>
 			<input type="file" (change)="onFileChange($event)">
 			<button type="button" (click)="backgroundImage = null">Clear</button>
+			<h3>Background Image Zoom</h3>
 			<select [(ngModel)]="backgroundMode">
 				<option value="fit">Fit</option>
 				<option value="fill">Fill</option>
 			</select>
 		</div>
-		<div *ngFor="let color of colors">
-			<div *ngFor="let size of ['large', 'medium', 'small']"
-				class="circle {{ size }} {{ color }}"
-				(click)="setColor(color, sizes[size])">{{ color }}</div>
-		</div>
-		<button [disabled]="!canUndo" (click)="replay()">Replay</button>
-		<button [disabled]="!canUndo && !canRedo" (click)="reset()">Reset</button>
-		<button [disabled]="!canUndo" (click)="canvas.undo()">Undo</button>
-		<button [disabled]="!canRedo" (click)="canvas.redo()">Redo</button>
+
+		<h2>Pen Color</h2>
+		<div *ngFor="let color of colors"
+			class="circle {{ color }} large"
+			(click)="setColor(color, sizes[size])">{{ color }}</div>
+
+		<h2>Pen Size</h2>
+		<div *ngFor="let size of ['large', 'medium', 'small']"
+			class="circle black {{ size }}"
+			(click)="setSize(sizes[size])">{{ size }}</div>
 	</mat-drawer>
 	<mat-drawer-content>
 		<div class="frame">
@@ -40,9 +43,26 @@
 				(canUndo)="canUndo = $event"
 				(canRedo)="canRedo = $event"></app-canvas>
 		</div>
-		<div>
-			<a href="{{ canUndo ? canvas.downloadUri : '' }}"
-				[download]="'image.png'">Download</a>
-		</div>
+		<mat-toolbar>
+			<a mat-icon-button color="primary"
+				href="{{ canUndo ? canvas.downloadUri : '' }}"
+				[download]="'image.png'" [disabled]="!canUndo">
+				<mat-icon matTooltip="Download">download</mat-icon>
+			</a>
+			<span class="mat-caption">|</span>
+			<button mat-icon-button [disabled]="!canUndo" (click)="replay()">
+				<mat-icon matTooltip="Replay">replay</mat-icon>
+			</button>
+			<button mat-icon-button color="warn" [disabled]="!canUndo && !canRedo" (click)="reset()">
+				<mat-icon matTooltip="Reset">delete</mat-icon>
+			</button>
+			<span class="mat-caption">|</span>
+			<button mat-icon-button [disabled]="!canUndo" (click)="canvas.undo()">
+				<mat-icon matTooltip="Undo">undo</mat-icon>
+			</button>
+			<button mat-icon-button [disabled]="!canRedo" (click)="canvas.redo()">
+				<mat-icon matTooltip="Redo">redo</mat-icon>
+			</button>
+		</mat-toolbar>
 	</mat-drawer-content>
 </mat-drawer-container>
