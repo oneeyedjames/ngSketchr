@@ -22,8 +22,7 @@ export type BackgroundMode = 'fit' | 'fill';
 
 @Component({
 	selector: 'app-canvas',
-	templateUrl: './canvas.component.html',
-	styleUrls: ['./canvas.component.css']
+	template: '<canvas #canvas></canvas>'
 })
 export class CanvasComponent implements AfterViewInit {
 	private _width: number = 640;
