@@ -3,6 +3,7 @@ import {
 	MatToolbarModule,
 	MatTooltipModule,
 	MatSidenavModule,
+	MatDialogModule,
 	MatButtonModule,
 	MatButtonToggleModule,
 	MatIconModule
@@ -13,6 +14,7 @@ import {
 		MatToolbarModule,
 		MatTooltipModule,
 		MatSidenavModule,
+		MatDialogModule,
 		MatButtonModule,
 		MatButtonToggleModule,
 		MatIconModule
@@ -21,6 +23,7 @@ import {
 		MatToolbarModule,
 		MatTooltipModule,
 		MatSidenavModule,
+		MatDialogModule,
 		MatButtonModule,
 		MatButtonToggleModule,
 		MatIconModule

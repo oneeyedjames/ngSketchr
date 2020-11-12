@@ -7,10 +7,12 @@ import { CanvasModule } from '../lib/canvas.module';
 
 import { MaterialModule } from './material.module';
 import { AppComponent } from './app.component';
+import { DialogComponent } from './dialog.component';
 
 @NgModule({
 	declarations: [
-		AppComponent
+		AppComponent,
+		DialogComponent
 	],
 	imports: [
 		FormsModule,
@@ -22,6 +24,9 @@ import { AppComponent } from './app.component';
 	providers: [],
 	bootstrap: [
 		AppComponent
+	],
+	entryComponents: [
+		DialogComponent
 	]
 })
 export class AppModule {}
