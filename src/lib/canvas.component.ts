@@ -22,7 +22,8 @@ export type BackgroundMode = 'fit' | 'fill';
 
 @Component({
 	selector: 'app-canvas',
-	template: '<canvas #canvas></canvas>'
+	templateUrl: './canvas.component.html',
+	styleUrls: ['./canvas.component.css']
 })
 export class CanvasComponent implements AfterViewInit {
 	private _width: number = 640;
@@ -42,6 +43,8 @@ export class CanvasComponent implements AfterViewInit {
 	private undoStack: DrawEvent[] = [];
 	private redoStack: DrawEvent[] = [];
 
+	private modes = { fit: 'contain', fill: 'cover' }
+
 	@ViewChild('canvas') canvas: ElementRef;
 
 	get backgroundColor(): string { return this._bgColor; }
@@ -51,13 +54,11 @@ export class CanvasComponent implements AfterViewInit {
 	@Input() set backgroundColor(color: string) {
 		this._bgColor = color;
 		this.backgroundColorChange.emit(color);
-		this.replay();
 	}
 
 	@Input() set backgroundImage(image: string) {
 		this._bgImage = image;
 		this.backgroundImageChange.emit(image);
-		this.replay();
 	}
 
 	@Input() set backgroundMode(mode: BackgroundMode) {
@@ -169,50 +170,50 @@ export class CanvasComponent implements AfterViewInit {
 		.subscribe((event: MouseEvent) => this.onEndDraw());
 	}
 
-	private drawBackgroundColor() {
-		if (this.context) {
-			this.context.fillStyle = this.backgroundColor;
-			this.context.fillRect(0, 0, this.width, this.height);
-		}
-	}
+	// private drawBackgroundColor() {
+	// 	if (this.context) {
+	// 		this.context.fillStyle = this.backgroundColor;
+	// 		this.context.fillRect(0, 0, this.width, this.height);
+	// 	}
+	// }
 
-	private async drawBackgroundImage(): Promise<void> {
-		if (!this.context) return;
-
-		return new Promise<void>((resolve, reject) => {
-			let image = new Image();
-			image.onload = () => {
-				let canvas = this.canvas.nativeElement;
-				let xScale = canvas.width / image.width;
-				let yScale = canvas.height / image.height;
-
-				let scale: number;
-				console.log(this.backgroundMode);
-				switch (this.backgroundMode) {
-					case 'fit':
-						scale = Math.min(xScale, yScale);
-						break;
-					case 'fill':
-						scale = Math.max(xScale, yScale);
-						break;
-				}
-
-				let dWidth = image.width * scale;
-				let dHeight = image.height * scale;
-
-				let dx = (canvas.width - dWidth) / 2;
-				let dy = (canvas.height - dHeight) / 2;
-
-				this.context.drawImage(image, 0, 0,
-					image.width, image.height,
-					dx, dy, dWidth, dHeight);
-
-				resolve();
-			}
-			image.onerror = reject;
-			image.src = this.backgroundImage;
-		});
-	}
+	// private async drawBackgroundImage(): Promise<void> {
+	// 	if (!this.context) return;
+	//
+	// 	return new Promise<void>((resolve, reject) => {
+	// 		let image = new Image();
+	// 		image.onload = () => {
+	// 			let canvas = this.canvas.nativeElement;
+	// 			let xScale = canvas.width / image.width;
+	// 			let yScale = canvas.height / image.height;
+	//
+	// 			let scale: number;
+	// 			console.log(this.backgroundMode);
+	// 			switch (this.backgroundMode) {
+	// 				case 'fit':
+	// 					scale = Math.min(xScale, yScale);
+	// 					break;
+	// 				case 'fill':
+	// 					scale = Math.max(xScale, yScale);
+	// 					break;
+	// 			}
+	//
+	// 			let dWidth = image.width * scale;
+	// 			let dHeight = image.height * scale;
+	//
+	// 			let dx = (canvas.width - dWidth) / 2;
+	// 			let dy = (canvas.height - dHeight) / 2;
+	//
+	// 			this.context.drawImage(image, 0, 0,
+	// 				image.width, image.height,
+	// 				dx, dy, dWidth, dHeight);
+	//
+	// 			resolve();
+	// 		}
+	// 		image.onerror = reject;
+	// 		image.src = this.backgroundImage;
+	// 	});
+	// }
 
 	private drawLine(line: Line2D) {
 		if (this.context) {
@@ -294,16 +295,7 @@ export class CanvasComponent implements AfterViewInit {
 		if (!this.context) return;
 
 		index = index == undefined ? 0 : index;
-
-		if (index == 0) {
-			this.clear();
-
-			if (this.backgroundColor)
-				this.drawBackgroundColor();
-
-			if (this.backgroundImage)
-				await this.drawBackgroundImage();
-		}
+		if (index == 0) this.clear();
 
 		if (this.undoStack.length == 0) return;
 
