@@ -90,12 +90,11 @@
 		<div class="panel">
 			<h2>Canvas Size</h2>
 			<div>{{ width }}x{{ height }}</div>
-			<a mat-raised-button color="primary"
-				href="{{ canUndo ? canvas.downloadUri : '' }}"
-				[download]="'image.png'" [disabled]="!canUndo">
+			<button mat-raised-button color="primary"
+				[disabled]="!canUndo" (click)="canvas.export()">
 				<mat-icon>download</mat-icon>
 				Download Image
-			</a>
+			</button>
 		</div>
 	</mat-drawer>
 	<mat-drawer-content style="font-size: 0; line-height: 0">
