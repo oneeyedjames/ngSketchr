@@ -170,51 +170,6 @@ export class CanvasComponent implements AfterViewInit {
 		.subscribe((event: MouseEvent) => this.onEndDraw());
 	}
 
-	// private drawBackgroundColor() {
-	// 	if (this.context) {
-	// 		this.context.fillStyle = this.backgroundColor;
-	// 		this.context.fillRect(0, 0, this.width, this.height);
-	// 	}
-	// }
-
-	// private async drawBackgroundImage(): Promise<void> {
-	// 	if (!this.context) return;
-	//
-	// 	return new Promise<void>((resolve, reject) => {
-	// 		let image = new Image();
-	// 		image.onload = () => {
-	// 			let canvas = this.canvas.nativeElement;
-	// 			let xScale = canvas.width / image.width;
-	// 			let yScale = canvas.height / image.height;
-	//
-	// 			let scale: number;
-	// 			console.log(this.backgroundMode);
-	// 			switch (this.backgroundMode) {
-	// 				case 'fit':
-	// 					scale = Math.min(xScale, yScale);
-	// 					break;
-	// 				case 'fill':
-	// 					scale = Math.max(xScale, yScale);
-	// 					break;
-	// 			}
-	//
-	// 			let dWidth = image.width * scale;
-	// 			let dHeight = image.height * scale;
-	//
-	// 			let dx = (canvas.width - dWidth) / 2;
-	// 			let dy = (canvas.height - dHeight) / 2;
-	//
-	// 			this.context.drawImage(image, 0, 0,
-	// 				image.width, image.height,
-	// 				dx, dy, dWidth, dHeight);
-	//
-	// 			resolve();
-	// 		}
-	// 		image.onerror = reject;
-	// 		image.src = this.backgroundImage;
-	// 	});
-	// }
-
 	private drawLine(line: Line2D) {
 		if (this.context) {
 			this.context.strokeStyle = this.color;
@@ -334,5 +289,71 @@ export class CanvasComponent implements AfterViewInit {
 				this.drawLine(line);
 			}
 		}
+	}
+
+	public async export(filename = 'image.png', type = 'image/png') {
+		const canvas = document.createElement('canvas') as HTMLCanvasElement;
+
+		canvas.width = this.width;
+		canvas.height = this.height;
+
+		const context = canvas.getContext('2d');
+		context.lineCap = 'round';
+
+		if (this.backgroundColor) {
+			context.fillStyle = this.backgroundColor;
+			context.fillRect(0, 0, this.width, this.height);
+		}
+
+		if (this.backgroundImage) {
+			await new Promise<void>((resolve, reject) => {
+				const image = new Image();
+				image.onload = () => {
+					const xScale = canvas.width / image.width;
+					const yScale = canvas.height / image.height;
+
+					let scale: number;
+					switch (this.backgroundMode) {
+						case 'fit':
+							scale = Math.min(xScale, yScale);
+							break;
+						case 'fill':
+							scale = Math.max(xScale, yScale);
+							break;
+					}
+
+					const dWidth = image.width * scale;
+					const dHeight = image.height * scale;
+
+					const dx = (canvas.width - dWidth) / 2;
+					const dy = (canvas.height - dHeight) / 2;
+
+					context.drawImage(image, 0, 0,
+						image.width, image.height,
+						dx, dy, dWidth, dHeight);
+
+					resolve();
+				}
+				image.onerror = reject;
+				image.src = this.backgroundImage;
+			});
+		}
+
+		for (let frame of this.undoStack) {
+			context.strokeStyle = frame.color;
+			context.lineWidth = frame.size;
+
+			for (let line of frame.path) {
+				context.beginPath();
+				context.moveTo(line.start.x, line.start.y);
+				context.lineTo(line.end.x, line.end.y);
+				context.stroke();
+			}
+		}
+
+		const link = document.createElement('a')
+		link.href = canvas.toDataURL(type);
+		link.download = filename;
+		link.click();
 	}
 }
