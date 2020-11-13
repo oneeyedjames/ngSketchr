@@ -43,7 +43,7 @@ export class CanvasComponent implements AfterViewInit {
 	private undoStack: DrawEvent[] = [];
 	private redoStack: DrawEvent[] = [];
 
-	private modes = { fit: 'contain', fill: 'cover' }
+	get modes() { return { fit: 'contain', fill: 'cover' }; }
 
 	@ViewChild('canvas') canvas: ElementRef;
 
